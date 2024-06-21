@@ -1,0 +1,6 @@
+@UniTutor_HostAddress = http://localhost:5298
+
+GET {{UniTutor_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
