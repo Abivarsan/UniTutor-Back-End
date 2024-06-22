@@ -22,7 +22,7 @@ namespace UniTutor.Model
         public string Qualification { get; set; }
 
         [Required]
-        public string Password { get; set; }
+        public string password { get; set; }
         [Required]
         public string HomeTown { get; set; }
         public string? Uni_ID { get; set; }

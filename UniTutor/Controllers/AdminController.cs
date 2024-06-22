@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -58,14 +59,14 @@ namespace UniTutor.Controllers
             }
         }
 
-       [HttpPost("adminLogin")]
-        public IActionResult AdminLogin([FromBody] Admin admin)
+        [HttpPost("adminLogin")]
+        public IActionResult AdminLogin([FromBody] LoginRequest adminLogin)
         {
-            var result = _admin.Login(admin.Email, admin.password);
+            var result = _admin.Login(adminLogin.Email, adminLogin.Password);
             if (result)
             {
                 // Retrieve admin details from the database
-                var loggedInAdmin = _admin.GetAdminByEmail(admin.Email);
+                var loggedInAdmin = _admin.GetAdminByEmail(adminLogin.Email);
 
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
                 var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -74,9 +75,9 @@ namespace UniTutor.Controllers
                 {
                     Subject = new ClaimsIdentity(new Claim[]
                     {
-                new Claim(ClaimTypes.Name, admin.Email),  // Email claim
-                new(ClaimTypes.NameIdentifier, loggedInAdmin.Id.ToString()),  // Admin ID claim
-                new(ClaimTypes.GivenName, loggedInAdmin.Name)  // Admin name claim
+                new Claim(ClaimTypes.Name, adminLogin.Email),  // Email claim
+                new Claim(ClaimTypes.NameIdentifier, loggedInAdmin.Id.ToString()),  // Admin ID claim
+                new Claim(ClaimTypes.GivenName, loggedInAdmin.Name)  // Admin name claim
                     }),
                     Expires = DateTime.UtcNow.AddDays(30),
                     SigningCredentials = credentials

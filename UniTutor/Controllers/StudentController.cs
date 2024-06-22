@@ -12,6 +12,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using UniTutor.Repository;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity.Data;
 
 namespace UniTutor.Controllers
 {
@@ -54,15 +55,15 @@ namespace UniTutor.Controllers
 
         }
         [HttpPost("login")]
-        public IActionResult login([FromBody] Student student)
+        public IActionResult Login([FromBody] LoginRequest studentLogin)
         {
-            var email = student.Email;
-            var password = student.Password;
+            var email = studentLogin.Email;
+            var password = studentLogin.Password;
 
             var result = _student.Login(email, password);
             if (result)
             {
-                var LoggedInStudent = _student.GetByMail(email);
+                var loggedInStudent = _student.GetByMail(email);
 
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
                 var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -71,9 +72,9 @@ namespace UniTutor.Controllers
                 {
                     Subject = new ClaimsIdentity(new Claim[]
                     {
-                new Claim(ClaimTypes.Name, email),  // Email claim
-                new(ClaimTypes.NameIdentifier, LoggedInStudent.Id.ToString()),  // Admin ID claim
-                new(ClaimTypes.GivenName, LoggedInStudent.FirstName)  // Admin name claim
+         new Claim(ClaimTypes.Name, email),  // Email claim
+         new Claim(ClaimTypes.NameIdentifier, loggedInStudent.Id.ToString()),  // Student ID claim
+         new Claim(ClaimTypes.GivenName, loggedInStudent.FirstName)  // Student name claim
                     }),
                     Expires = DateTime.UtcNow.AddDays(30),
                     SigningCredentials = credentials
@@ -82,11 +83,11 @@ namespace UniTutor.Controllers
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var token = tokenHandler.CreateToken(tokenDescriptor);
 
-                return Ok(new { token = tokenHandler.WriteToken(token), Idv  = LoggedInStudent.Id });
+                return Ok(new { token = tokenHandler.WriteToken(token), Id = loggedInStudent.Id });
             }
             else
             {
-                return Unauthorized();
+                return Unauthorized("Invalid email or password");
             }
         }
         //update the student details

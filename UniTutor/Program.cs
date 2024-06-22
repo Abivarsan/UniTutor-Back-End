@@ -14,8 +14,8 @@ using CloudinaryDotNet;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-// Starting
 builder.Services.AddControllers();
+
 // CORS Configuration
 builder.Services.AddCors(options =>
 {
@@ -32,7 +32,6 @@ builder.Services.AddCors(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-
 // Adding DB context
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
 {
@@ -40,7 +39,7 @@ builder.Services.AddDbContext<ApplicationDBContext>(options =>
         throw new InvalidOperationException("Connection String is not found"));
 });
 
-//Configuring JWT Authentication
+// Configuring JWT Authentication
 var jwtIsUser = builder.Configuration.GetSection("Jwt:Issuer").Get<string>();
 var jwtKey = builder.Configuration.GetSection("Jwt:Key").Get<string>();
 
@@ -62,16 +61,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 // Registering Cloudinary
-
-builder.Services.AddSingleton(new Cloudinary(new  Account(
+builder.Services.AddSingleton(new Cloudinary(new Account(
     builder.Configuration["Cloudinary:CloudName"],
     builder.Configuration["Cloudinary:ApiKey"],
     builder.Configuration["Cloudinary:ApiSecret"]
 )));
+
 builder.Services.AddScoped<IAdmin, AdminRepository>();
 builder.Services.AddScoped<IStudent, StudentRepository>();
-//builder.Services.AddScoped<ITutor, TutorRepository>();
-
 
 var app = builder.Build();
 
@@ -86,17 +83,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AllowSpecificOrigin");
+app.UseRouting(); // This line must be added before UseAuthentication and UseAuthorization
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+});
 
-app.Run(); 
-/*
- {
-  "id": 1,
-  "email": "admin@gmail.com",
-  "name": "admin",
-  "password": "Admin@123"
-}
- */
+app.Run();

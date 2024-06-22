@@ -44,7 +44,7 @@ namespace UniTutor.Repository
 
             PasswordHash ph = new PasswordHash();
 
-            bool isValidPassword = ph.VerifyPassword(password, tutor.Password);
+            bool isValidPassword = ph.VerifyPassword(password, tutor.password);
             Console.WriteLine($"Password Validation : {isValidPassword}");
 
             if (isValidPassword)

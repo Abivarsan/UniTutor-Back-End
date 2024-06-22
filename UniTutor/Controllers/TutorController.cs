@@ -29,10 +29,10 @@ namespace UniTutor.Controllers
             if (ModelState.IsValid)
             {
                 PasswordHash ph = new PasswordHash();
-                var Password = ph.HashPassword(tutor.Password);
+                var Password = ph.HashPassword(tutor.password);
                 Console.WriteLine(Password);
-                tutor.Password = Password;
-                Console.WriteLine(tutor.Password);
+                tutor.password = Password;
+                Console.WriteLine(tutor.password);
 
                 // Upload CV and Uni_ID
               /* tutor.CV = _tutor.UploadFiles(CV);

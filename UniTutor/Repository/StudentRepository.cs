@@ -23,7 +23,7 @@ namespace UniTutor.Repository
             try
             {
               PasswordHash ph = new PasswordHash();
-              student.Password = ph.HashPassword(student.Password);
+              student.password = ph.HashPassword(student.password);
                 _DBcontext.Students.Add(student);
                 _DBcontext.SaveChanges();
                 return true;
@@ -36,28 +36,34 @@ namespace UniTutor.Repository
         }
         public bool Login(string email, string password)
         {
-            var student = _DBcontext.Students.FirstOrDefault(c => c.Email == email);
-
-            if (student == null)
+            try
             {
-                return false;
+                var student = _DBcontext.Students.FirstOrDefault(a => a.Email == email);
+
+                if (student == null)
+                {
+                    Console.WriteLine("Student not found.");
+                    return false;
+                }
+
+                PasswordHash ph = new PasswordHash();
+
+                bool isValidPassword = ph.VerifyPassword(password, student.password);
+
+                return isValidPassword;
             }
-
-           PasswordHash ph = new PasswordHash();
-
-           bool isValidPassword = ph.VerifyPassword(password, student.Password);
-
-            if (isValidPassword)
+            catch (InvalidCastException ex)
             {
-                return true;
+                Console.WriteLine($"InvalidCastException: {ex.Message}");
+                throw;
             }
-            else
+            catch (Exception ex)
             {
-                return false;
+                Console.WriteLine($"General exception: {ex.Message}");
+                throw;
             }
-
-
         }
+
         public Student GetByMail(string Email)
         {
             return _DBcontext.Students.FirstOrDefault(s => s.Email == Email);
