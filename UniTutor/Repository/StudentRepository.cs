@@ -89,69 +89,9 @@ namespace UniTutor.Repository
             return _DBcontext.Students.ToList();
         }
 
-        public string UploadFile(IFormFile file)
-        {
-            try
-            {
-                // Check if the file exists
-                if (file == null || file.Length == 0)
-                {
-                    throw new ArgumentNullException(nameof(file), "No file uploaded");
-                }
+       
 
-                // Upload file to Cloudinary
-                var uploadParams = new ImageUploadParams
-                {
-                    File = new FileDescription(file.FileName, file.OpenReadStream())
-                };
-
-                var uploadResult = _cloudinary.Upload(uploadParams);
-
-                // Return the URL of the uploaded file
-                return uploadResult.Uri.AbsoluteUri;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-                throw;
-            }
-
-        }
-
-        /* public bool UpdateStudent(Student student, IFormFile ProfileImage)
-         {
-             var existingstudent = _DBcontext.Students.Find(student.Id);
-             if (existingstudent != null)
-             {
-                 existingstudent.FirstName = student.FirstName;
-                 existingstudent.LastName = student.LastName;
-                 existingstudent.Grade = student.Grade;
-                 existingstudent.Address = student.Address;
-                 existingstudent.HomeTown = student.HomeTown;
-                 existingstudent.PhoneNumber = student.PhoneNumber;
-                 //update the student profile
-                if (ProfileImage != null)
-                 {
-                     var uploadResult = new ImageUploadResult();
-
-                     using (var stream = ProfileImage.OpenReadStream())
-                     {
-                         var uploadParams = new ImageUploadParams()
-                         {
-                             File = new FileDescription(ProfileImage.FileName, stream)
-                         };
-                         uploadResult = _cloudinary.Upload(uploadParams);
-                     }
-                     existingstudent.ProfileImage = uploadResult.Url.ToString();
-                 }
-                     _DBcontext.Students.Update(existingstudent);
-                 _DBcontext.SaveChanges();
-                 return true;
-
-             }
-             return false;
-
-         }*/
+        
         public bool SignOut()
         {
             try
@@ -191,6 +131,81 @@ namespace UniTutor.Repository
                 return false;
             }
         }
+
+       
+
+        public async Task<bool> Update(Student student)
+        {
+            _DBcontext.Students.Update(student);
+            return await _DBcontext.SaveChangesAsync() > 0;
+        }
+        //abivarsan anna 
+        public async Task<int> AddStudentWithImageAsync(StudentViewModel model)
+        {
+            if (model.Image == null || model.Image.Length == 0)
+                throw new ArgumentException("No file uploaded.");
+
+            using (var ms = new MemoryStream())
+            {
+                await model.Image.CopyToAsync(ms);
+                var student = new Student
+                {
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Grade = model.Grade,
+                    Address = model.Address,
+                    HomeTown = model.HomeTown,
+                    PhoneNumber = model.PhoneNumber,
+                    Email = model.Email,
+                    password = model.password,
+                    VerificationCode = model.VerificationCode,
+                    FileName = model.Image.FileName,
+                    ContentType = model.Image.ContentType,
+                    Data = ms.ToArray()
+                };
+
+                _DBcontext.Students.Add(student);
+                await _DBcontext.SaveChangesAsync();
+                return student.Id;
+            }
+        }
+
+        public async Task<Student> GetImageAsync(int id)
+        {
+            var student = await _DBcontext.Students.FindAsync(id);
+            if (student == null)
+                throw new ArgumentException("Student not found.");
+
+            return student;
+        }
+
+        public async Task<Student> GetStudentAsync(int id)
+        {
+            return await _DBcontext.Students.FindAsync(id);
+        }
+
+        public async Task AddStudentAsync(Student student)
+        {
+            _DBcontext.Students.Add(student);
+            await _DBcontext.SaveChangesAsync();
+        }
+
+        public async Task UpdateStudentAsync(Student student)
+        {
+            _DBcontext.Students.Update(student);
+            await _DBcontext.SaveChangesAsync();
+        }
+
+        public async Task DeleteStudentAsync(int id)
+        {
+            var student = await _DBcontext.Students.FindAsync(id);
+            if (student != null)
+            {
+                _DBcontext.Students.Remove(student);
+                await _DBcontext.SaveChangesAsync();
+            }
+        }
+
 
     }
 }

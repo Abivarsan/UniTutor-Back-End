@@ -23,8 +23,12 @@ namespace UniTutor.Model
 
        [Required]
         public string password { get; set; }
+        public String? VerificationCode { get; set; }
 
         //public string? ProfileImage { get; set; }
+        public string? FileName { get; set; }
+        public string? ContentType { get; set; }
+        public byte[]? Data { get; set; }
 
     }
 }

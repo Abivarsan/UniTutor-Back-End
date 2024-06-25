@@ -1,22 +1,21 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.Filters;
-using UniTutor.DataBase;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using UniTutor.Model;
-using UniTutor.Repository;
+using UniTutor.DataBase;
+//using UniTutor.Configuration;
 using UniTutor.Interface;
+using UniTutor.Repository;
+using UniTutor.Services;
 using CloudinaryDotNet;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
 
-// CORS Configuration
+// CORS Configuration (if needed)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
@@ -28,10 +27,6 @@ builder.Services.AddCors(options =>
         });
 });
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
 // Adding DB context
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
 {
@@ -40,7 +35,7 @@ builder.Services.AddDbContext<ApplicationDBContext>(options =>
 });
 
 // Configuring JWT Authentication
-var jwtIsUser = builder.Configuration.GetSection("Jwt:Issuer").Get<string>();
+var jwtIssuer = builder.Configuration.GetSection("Jwt:Issuer").Get<string>();
 var jwtKey = builder.Configuration.GetSection("Jwt:Key").Get<string>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -54,11 +49,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtIsUser,
-            ValidAudience = jwtIsUser,
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtIssuer,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
         };
     });
+
+// Add Email Configuration
+var emailConfig = builder.Configuration
+    .GetSection("EmailConfiguration")
+    .Get<EmailConfiguration>();
+builder.Services.AddSingleton(emailConfig);
+builder.Services.AddTransient<IEmailService, EmailService>();
 
 // Registering Cloudinary
 builder.Services.AddSingleton(new Cloudinary(new Account(
@@ -69,6 +71,14 @@ builder.Services.AddSingleton(new Cloudinary(new Account(
 
 builder.Services.AddScoped<IAdmin, AdminRepository>();
 builder.Services.AddScoped<IStudent, StudentRepository>();
+builder.Services.AddScoped<ITutor, TutorRepository>();
+//builder.Services.AddTransient<IPasswordService, PasswordService>();
+
+// Register Swagger generator
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "UniTutor API", Version = "v1" });
+});
 
 var app = builder.Build();
 
@@ -84,7 +94,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("AllowSpecificOrigin");
-app.UseRouting(); // This line must be added before UseAuthentication and UseAuthorization
+app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 

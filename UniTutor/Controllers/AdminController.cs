@@ -18,15 +18,15 @@ namespace UniTutor.Controllers
         private readonly IAdmin _admin;
         private IConfiguration _config;
         private readonly IStudent _student;
-        //private readonly ITutor _tutor;
+        private readonly ITutor _tutor;
 
-        public AdminController(IAdmin adminRepository, IConfiguration config, IStudent student)
-        //public AdminController(IAdmin adminRepository, IConfiguration config, IStudent student, ITutor tutor)
+       
+        public AdminController(IAdmin adminRepository, IConfiguration config, IStudent student, ITutor tutor)
         {
             _admin = adminRepository;
             _config = config;
             _student = student;
-           // _tutor = tutor;
+            _tutor = tutor;
         }
 
 
@@ -119,7 +119,7 @@ namespace UniTutor.Controllers
             return NotFound(new { message = "Student not found." });
         }
 
-        /*[HttpDelete("delete-tutor/{id}")]
+        [HttpDelete("delete-tutor/{id}")]
         public IActionResult DeleteTutor(int id)
         {
             var result = _tutor.Delete(id);
@@ -128,7 +128,7 @@ namespace UniTutor.Controllers
                 return Ok(new { message = "Tutor deleted successfully." });
             }
             return NotFound(new { message = "Tutor not found." });
-        }*/
+        }
 
     }
 }

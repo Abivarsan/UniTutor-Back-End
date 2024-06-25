@@ -104,5 +104,35 @@ namespace UniTutor.Repository
         {
             throw new NotImplementedException();
         }
+        public bool acceptTutors(Tutor tutor)
+        {
+            try
+            {
+                tutor.accept = 1;
+                _DBcontext.Tutors.Update(tutor);
+                _DBcontext.SaveChanges();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return false;
+            }
+        }
+        public bool rejectTutors(Tutor tutor)
+        {
+            try
+            {
+                tutor.accept = -1;
+                _DBcontext.Tutors.Update(tutor);
+                _DBcontext.SaveChanges();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return false;
+            }
+        }
     }
 }

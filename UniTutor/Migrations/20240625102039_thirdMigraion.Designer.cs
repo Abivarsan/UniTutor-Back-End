@@ -11,8 +11,8 @@ using UniTutor.DataBase;
 namespace UniTutor.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20240622145619_passwordMigration")]
-    partial class passwordMigration
+    [Migration("20240625102039_thirdMigraion")]
+    partial class thirdMigraion
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -52,11 +52,11 @@ namespace UniTutor.Migrations
 
             modelBuilder.Entity("UniTutor.Model.Request", b =>
                 {
-                    b.Property<int>("RequestId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RequestId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Availability")
                         .IsRequired()
@@ -73,9 +73,6 @@ namespace UniTutor.Migrations
                     b.Property<int>("StudentId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Student_Id")
-                        .HasColumnType("int");
-
                     b.Property<string>("Subject")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -83,17 +80,10 @@ namespace UniTutor.Migrations
                     b.Property<int>("TutorId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Tutor_id")
+                    b.Property<int>("status")
                         .HasColumnType("int");
 
-                    b.Property<bool>("status")
-                        .HasColumnType("bit");
-
-                    b.HasKey("RequestId");
-
-                    b.HasIndex("StudentId");
-
-                    b.HasIndex("TutorId");
+                    b.HasKey("Id");
 
                     b.ToTable("Request");
                 });
@@ -133,6 +123,12 @@ namespace UniTutor.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ProfileImage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("VerificationCode")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("password")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -154,7 +150,16 @@ namespace UniTutor.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CV")
+                    b.Property<string>("CVContentType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("CVData")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("CVFileName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
@@ -194,8 +199,20 @@ namespace UniTutor.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Uni_ID")
+                    b.Property<string>("UniIDContentType")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("UniIDData")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("UniIDFileName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("accept")
+                        .HasColumnType("int");
 
                     b.Property<string>("password")
                         .IsRequired()
@@ -208,25 +225,6 @@ namespace UniTutor.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Tutors");
-                });
-
-            modelBuilder.Entity("UniTutor.Model.Request", b =>
-                {
-                    b.HasOne("UniTutor.Model.Student", "Student")
-                        .WithMany()
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("UniTutor.Model.Tutor", "Tutor")
-                        .WithMany()
-                        .HasForeignKey("TutorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Student");
-
-                    b.Navigation("Tutor");
                 });
 #pragma warning restore 612, 618
         }

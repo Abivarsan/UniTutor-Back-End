@@ -20,19 +20,34 @@ namespace UniTutor.Repository
             _cloudinary = cloudinary;
         }
 
-        public bool signUp(Tutor tutor)
+      /*  public bool SignUp(Tutor tutor)
         {
-            try
+            if (tutor.CvFile != null)
             {
-                _DBcontext.Tutors.Add(tutor);
-                _DBcontext.SaveChanges();
-                return true;
+                using (var ms = new MemoryStream())
+                {
+                    tutor.CvFile.CopyTo(ms);
+                    tutor.CVFileName = tutor.CvFile.FileName;
+                    tutor.CVContentType = tutor.CvFile.ContentType;
+                    tutor.CVData = ms.ToArray();
+                }
             }
-            catch
+
+            if (tutor.UniIdFile != null)
             {
-                return false;
+                using (var ms = new MemoryStream())
+                {
+                    tutor.UniIdFile.CopyTo(ms);
+                    tutor.UniIDFileName = tutor.UniIdFile.FileName;
+                    tutor.UniIDContentType = tutor.UniIdFile.ContentType;
+                    tutor.UniIDData = ms.ToArray();
+                }
             }
-        }
+
+            _DBcontext.Tutors.Add(tutor);
+            return _DBcontext.SaveChanges() > 0;
+        }*/
+        
         public bool login(string email, string password)
         {
             var tutor = _DBcontext.Tutors.FirstOrDefault(a => a.Email == email);
@@ -112,66 +127,115 @@ namespace UniTutor.Repository
             return false;
 
         }
-
-        /*public string UploadFile(IFormFile file)
+        public bool acceptRequest(Request request)
         {
             try
             {
-                // Check if the file exists
-                if (file == null || file.Length == 0)
-                {
-                    throw new ArgumentNullException(nameof(file), "No file uploaded");
-                }
+                request.status = 1;
+                _DBcontext.Request.Update(request);
+                _DBcontext.SaveChanges();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return false;
+            }
+        }
+        public bool rejectRequest(Request request)
+        {
+            try
+            {
+                request.status = -1; 
+                _DBcontext.Request.Update(request);
+                _DBcontext.SaveChanges();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return false;
+            }
+        }
+        public ICollection<Request> GetAllRequest(int id)
+        {
+            var requests = _DBcontext.Request.Where(r => r.TutorId == id).ToList();
+            return requests;
+        }
+        public ICollection<Request> GetAcceptedRequest(int id)
+        {
+            var requests = _DBcontext.Request.Where(r => r.TutorId == id && r.status==1).ToList();
+            return requests;
+        }
+        public async Task<int> AddTutorWithFilesAsync(TutorViewModel model)
+        {
+            if ((model.CvFile == null || model.CvFile.Length == 0) || (model.UniIdFile == null || model.UniIdFile.Length == 0))
+                throw new ArgumentException("No file uploaded.");
 
-                // Upload file to Cloudinary
-                var uploadParams = new ImageUploadParams
+            using (var imageStream = new MemoryStream())
+            using (var pdfStream = new MemoryStream())
+            {
+                await model.CvFile.CopyToAsync(imageStream);
+                await model.UniIdFile.CopyToAsync(pdfStream);
+
+                var tutor = new Tutor
                 {
-                    File = new FileDescription(file.FileName, file.OpenReadStream())
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Email = model.Email,
+                    password = model.password,
+                    Address = model.Address,
+                    PhoneNumber = model.PhoneNumber,
+                    Ocupation = model.Ocupation,
+                    ModeOfTeaching = model.ModeOfTeaching,
+                    Medium = model.Medium,
+                    subject = model.subject,
+                    Qualification = model.Qualification,
+                    HomeTown = model.HomeTown,
+                    CVFileName = model.CvFile.FileName,
+                    CVContentType = model.CvFile.ContentType,
+                    CVData = imageStream.ToArray(),
+                    UniIDFileName = model.UniIdFile.FileName,
+                    UniIDContentType = model.UniIdFile.ContentType,
+                    UniIDData = pdfStream.ToArray()
                 };
 
-                var uploadResult = _cloudinary.Upload(uploadParams);
-
-                // Return the URL of the uploaded file
-                return uploadResult.Uri.AbsoluteUri;
+                _DBcontext.Tutors.Add(tutor);
+                await _DBcontext.SaveChangesAsync();
+                return tutor.Id;
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-                throw;
-            }
-
         }
-        public string[] UploadFiles(IFormFile[] files)
+
+        public async Task<Tutor> GetUniIDAsync(int id)
         {
-            try
-            {
-                if (files == null || files.Length == 0)
-                {
-                    throw new ArgumentNullException(nameof(files), "No files uploaded");
-                }
+            var tutor = await _DBcontext.Tutors.FindAsync(id);
+            if (tutor == null)
+                throw new ArgumentException("Tutor not found.");
 
-                var uploadedUrls = new List<string>();
+            return tutor;
+        }
 
-                foreach (var file in files)
-                {
-                    var uploadParams = new ImageUploadParams
-                    {
-                        File = new FileDescription(file.FileName, file.OpenReadStream())
-                    };
+        public async Task<Tutor> GetCvFileAsync(int id)
+        {
+            var tutor = await _DBcontext.Tutors.FindAsync(id);
+            if (tutor == null)
+                throw new ArgumentException("Tutor not found.");
 
-                    var uploadResult = _cloudinary.Upload(uploadParams);
-                    uploadedUrls.Add(uploadResult.Uri.AbsoluteUri);
-                }
+            return tutor;
+        }
 
-                return uploadedUrls.ToArray();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-                throw;
-            }
+        public async Task<Tutor> GetTutorAsync(int id)
+        {
+            return await _DBcontext.Tutors.FindAsync(id);
+        }
 
-        }*/
+        public async Task UpdateTutorAsync(Tutor tutor)
+        {
+            _DBcontext.Tutors.Update(tutor);
+            await _DBcontext.SaveChangesAsync();
+        }
+
+
     }
 
 }

@@ -1,21 +1,24 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UniTutor.Model
 {
     public class Request
     {
         [Key]
-        public int RequestId { get; set; }
-        
+        public int Id { get; set; }
         public string Location { get; set; }
         public string Subject { get; set; }
         public string Medium { get; set; }
         public string Availability { get; set; }
-        public bool status { get; set; }
-        public int Student_Id { get; set; }
-        public Student Student { get; set; }
-        public int Tutor_id { get; set; }
+        public int status { get; set; } = 0;
+        public int StudentId { get; set; }
+        public int TutorId { get; set; }
+        [NotMapped]
         public Tutor Tutor { get; set; }
+        [NotMapped]
+        public Student Student { get; set; }
+
 
 
     }
