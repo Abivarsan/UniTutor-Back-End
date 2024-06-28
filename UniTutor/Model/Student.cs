@@ -13,6 +13,7 @@ namespace UniTutor.Model
         public string LastName { get; set; }
         public int Grade { get; set; }
         public String Address { get; set; }
+        public string School { get; set; }
         public int HomeTown { get; set; }
         public string PhoneNumber { get; set; }
 
@@ -20,15 +21,12 @@ namespace UniTutor.Model
         [MaxLength(100)]
         public string Email { get; set; }
 
-
        [Required]
         public string password { get; set; }
         public String? VerificationCode { get; set; }
 
-        //public string? ProfileImage { get; set; }
-        public string? FileName { get; set; }
-        public string? ContentType { get; set; }
-        public byte[]? Data { get; set; }
+        public string? ProfileImageUrl { get; set; }
+        
 
     }
 }

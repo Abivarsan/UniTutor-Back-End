@@ -99,10 +99,13 @@ namespace UniTutor.Repository
         {
             return _DBcontext.Admin.FirstOrDefault(x => x.Id == Id);
         }
-
-        public bool Logout()
+        public IEnumerable<Student> GetAllStudent()
         {
-            throw new NotImplementedException();
+            return _DBcontext.Students.ToList();
+        }
+        public IEnumerable<Tutor> GetAllTutor()
+        {
+            return _DBcontext.Tutors.ToList();
         }
         public bool acceptTutors(Tutor tutor)
         {
@@ -133,6 +136,10 @@ namespace UniTutor.Repository
                 Console.WriteLine(ex.ToString());
                 return false;
             }
+        }
+        public bool Logout()
+        {
+            throw new NotImplementedException();
         }
     }
 }

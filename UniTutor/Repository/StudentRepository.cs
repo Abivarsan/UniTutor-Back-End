@@ -68,6 +68,10 @@ namespace UniTutor.Repository
         {
             return _DBcontext.Students.FirstOrDefault(s => s.Email == Email);
         }
+        public Student GetById(int id)
+        {
+            return _DBcontext.Students.Find(id);
+        }
         public bool Delete(int id)
         {
             var student = _DBcontext.Students.Find(id);
@@ -79,15 +83,9 @@ namespace UniTutor.Repository
             }
             return false;
         }
-        public Student GetById(int id)
-        {
-            return _DBcontext.Students.Find(id);
-        }
+        
 
-        public IEnumerable<Student> GetAll()
-        {
-            return _DBcontext.Students.ToList();
-        }
+        
 
        
 
@@ -131,54 +129,24 @@ namespace UniTutor.Repository
                 return false;
             }
         }
+        public ICollection<Tutor> GetAllTutor()
+        {
+            var tutors = _DBcontext.Tutors.ToList();
+            return tutors;
+        }
+        public ICollection<Tutor> GetTutorByLocation(int location)
+        {
+            var tutors = _DBcontext.Tutors.Where(r => r.HomeTown == location).ToList();
+            return tutors;
+        }
 
-       
 
         public async Task<bool> Update(Student student)
         {
             _DBcontext.Students.Update(student);
             return await _DBcontext.SaveChangesAsync() > 0;
         }
-        //abivarsan anna 
-        public async Task<int> AddStudentWithImageAsync(StudentViewModel model)
-        {
-            if (model.Image == null || model.Image.Length == 0)
-                throw new ArgumentException("No file uploaded.");
-
-            using (var ms = new MemoryStream())
-            {
-                await model.Image.CopyToAsync(ms);
-                var student = new Student
-                {
-                    FirstName = model.FirstName,
-                    LastName = model.LastName,
-                    Grade = model.Grade,
-                    Address = model.Address,
-                    HomeTown = model.HomeTown,
-                    PhoneNumber = model.PhoneNumber,
-                    Email = model.Email,
-                    password = model.password,
-                    VerificationCode = model.VerificationCode,
-                    FileName = model.Image.FileName,
-                    ContentType = model.Image.ContentType,
-                    Data = ms.ToArray()
-                };
-
-                _DBcontext.Students.Add(student);
-                await _DBcontext.SaveChangesAsync();
-                return student.Id;
-            }
-        }
-
-        public async Task<Student> GetImageAsync(int id)
-        {
-            var student = await _DBcontext.Students.FindAsync(id);
-            if (student == null)
-                throw new ArgumentException("Student not found.");
-
-            return student;
-        }
-
+        
         public async Task<Student> GetStudentAsync(int id)
         {
             return await _DBcontext.Students.FindAsync(id);

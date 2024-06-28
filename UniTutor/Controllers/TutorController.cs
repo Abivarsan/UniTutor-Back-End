@@ -24,66 +24,7 @@ namespace UniTutor.Controllers
             _config = config;
         }
 
-        /*[HttpPost("createAccount")]
-         public IActionResult RequestAccount([FromForm] Tutor tutor)
-         {
-             if (ModelState.IsValid)
-             {
-                 PasswordHash ph = new PasswordHash();
-                 var Password = ph.HashPassword(tutor.password);
-                 Console.WriteLine(Password);
-                 tutor.password = Password;
-                 Console.WriteLine(tutor.password);
-
-                 // Upload CV and Uni_ID
-               /* tutor.CV = _tutor.UploadFiles(CV);
-                 tutor.Uni_ID = _tutor.UploadFile(Uni_ID);*/
-
-        /* var result = _tutor.signUp(tutor);
-
-          if (result)
-          {
-              return Ok(result);
-          }
-          else
-          {
-              return BadRequest("signup failed");
-          }
-      }
-      else
-      {
-          return BadRequest("Model failed");
-      }
-  }*/
-        /*  [HttpPost("createAccount")]
-          public async Task<IActionResult> RequestAccount([FromForm] Tutor tutor, [FromForm] IFormFile CvFile, [FromForm] IFormFile UniIdFile)
-          {
-              if (ModelState.IsValid)
-              {
-                  PasswordHash ph = new PasswordHash();
-                  var hashedPassword = ph.HashPassword(tutor.password);
-                  tutor.password = hashedPassword;
-
-                  tutor.CvFile = CvFile;
-                  tutor.UniIdFile = UniIdFile;
-
-                  var result = _tutor.SignUp(tutor);
-
-                  if (result)
-                  {
-                      return Ok(new { message = "Tutor signed up successfully." });
-                  }
-                  else
-                  {
-                      return BadRequest("Signup failed.");
-                  }
-              }
-              else
-              {
-                  return BadRequest("Invalid model state.");
-              }
-          }*/
-
+       
 
 
         [HttpPost("login")]
@@ -180,56 +121,35 @@ namespace UniTutor.Controllers
                 return BadRequest("There is no accept request");
             }
         }
-        [HttpPost("create")]
-        public async Task<IActionResult> Upload([FromForm] TutorViewModel model)
+        [HttpPost]
+        [Route("create")]
+        public IActionResult CreateAccount([FromBody] Tutor tutor)
         {
-            if ((model.CvFile == null || model.CvFile.Length == 0) || (model.UniIdFile == null || model.UniIdFile.Length == 0))
-                return BadRequest("No file uploaded.");
 
-            try
+            if (ModelState.IsValid)
             {
-                var tutorId = await _tutor.AddTutorWithFilesAsync(model);
-                return Ok(new { Id = tutorId });
+
+                var result = _tutor.SignUp(tutor);
+                if (result)
+                {
+                    Console.WriteLine("registration success");
+                    return Ok(result);
+
+                }
+                else
+                {
+                    Console.WriteLine("registration failed");
+                    return BadRequest(result);
+                }
             }
-            catch (ArgumentException ex)
+            else
             {
-                return BadRequest(ex.Message);
+                return BadRequest("ModelError");
             }
+
         }
 
-        [HttpGet("CvFile/{id}")]
-        public async Task<IActionResult> GetImage(int id)
-        {
-            try
-            {
-                var tutor = await _tutor.GetCvFileAsync(id);
-                if (tutor == null)
-                    return NotFound();
 
-                return File(tutor.CVData, tutor.CVContentType, tutor.CVFileName);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpGet("UniID/{id}")]
-        public async Task<IActionResult> GetUniID(int id)
-        {
-            try
-            {
-                var tutor = await _tutor.GetUniIDAsync(id);
-                if (tutor == null)
-                    return NotFound();
-
-                return File(tutor.UniIDData, tutor.UniIDContentType, tutor.UniIDFileName);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTutor(int id)

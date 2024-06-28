@@ -1,44 +1,45 @@
-﻿//using Microsoft.AspNetCore.Http;
-//using Microsoft.AspNetCore.Mvc;
-//using UniTutor.Interface;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using UniTutor.DTO;
+using UniTutor.Interface;
 
-//namespace UniTutor.Controllers
-//{
-//    [Route("api/[controller]")]
-//    [ApiController]
-//    public class PasswordController : ControllerBase
-//    {
-//        private readonly IPasswordService _passwordService;
+namespace UniTutor.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class PasswordController : ControllerBase
+    {
+        private readonly IPasswordService _passwordService;
 
-//        public PasswordController(IPasswordService passwordService)
-//        {
-//            _passwordService = passwordService;
-//        }
+        public PasswordController(IPasswordService passwordService)
+        {
+            _passwordService = passwordService;
+        }
 
-//        [HttpPost("forgot-password")]
-//        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest fprequest)
-//        {
-//            try
-//            {
-//                await _passwordService.SendVerificationCodeAsync(fprequest.Email);
-//                return Ok(new { message = "Verification code sent to email" });
-//            }
-//            catch (Exception ex)
-//            {
-//                return NotFound(new { message = ex.Message });
-//            }
-//        }
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest fprequest)
+        {
+            try
+            {
+                await _passwordService.SendVerificationCodeAsync(fprequest.Email);
+                return Ok(new { message = "Verification code sent to email" });
+            }
+            catch (Exception ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
 
-//        [HttpPost("reset-password")]
-//        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest rprequest)
-//        {
-//            var result = await _passwordService.ResetPasswordAsync(rprequest.Email, rprequest.VerificationCode, rprequest.NewPassword);
-//            if (!result)
-//            {
-//                return BadRequest(new { message = "Invalid verification code" });
-//            }
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest rprequest)
+        {
+            var result = await _passwordService.ResetPasswordAsync(rprequest.Email, rprequest.VerificationCode, rprequest.NewPassword);
+            if (!result)
+            {
+                return BadRequest(new { message = "Invalid verification code" });
+            }
 
-//            return Ok(new { message = "Password reset successful" });
-//        }
-//    }
-//}
+            return Ok(new { message = "Password reset successful" });
+        }
+    }
+}

@@ -8,8 +8,8 @@ namespace UniTutor.Interface
        public Tutor GetById(int id);
         public IEnumerable<Tutor> GetAll();
         public bool login(string email, string password);
-        //public bool SignUp(Tutor tutor);
-        
+        public bool SignUp(Tutor tutor);
+
         public bool logout();
         public bool acceptRequest(Request request);
 
@@ -20,17 +20,15 @@ namespace UniTutor.Interface
        public Tutor GetTutorByEmail(string email);
 
         public bool isUser(string email);
-        Task<int> AddTutorWithFilesAsync(TutorViewModel model);
-        Task<Tutor> GetCvFileAsync(int id);
-        Task<Tutor> GetUniIDAsync(int id);
         Task<Tutor> GetTutorAsync(int id);
         Task UpdateTutorAsync(Tutor tutor);
+       
 
 
 
 
         // public bool createComplaint(Complaint complaint);
 
-       
+
     }
 }

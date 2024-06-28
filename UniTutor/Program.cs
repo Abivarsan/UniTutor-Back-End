@@ -66,13 +66,13 @@ builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.AddSingleton(new Cloudinary(new Account(
     builder.Configuration["Cloudinary:CloudName"],
     builder.Configuration["Cloudinary:ApiKey"],
-    builder.Configuration["Cloudinary:ApiSecret"]
+    builder.Configuration["Cloudinary:ApiSecret"]   
 )));
 
 builder.Services.AddScoped<IAdmin, AdminRepository>();
 builder.Services.AddScoped<IStudent, StudentRepository>();
 builder.Services.AddScoped<ITutor, TutorRepository>();
-//builder.Services.AddTransient<IPasswordService, PasswordService>();
+builder.Services.AddTransient<IPasswordService, PasswordService>();
 
 // Register Swagger generator
 builder.Services.AddSwaggerGen(c =>
@@ -103,4 +103,18 @@ app.UseEndpoints(endpoints =>
     endpoints.MapControllers();
 });
 
-app.Run();
+app.Run();/*{
+  "id": 0,
+  "firstName": "sdyueuadb",
+  "lastName": "jdcsucb",
+  "grade": 3,
+  "address": "cdnsihvisn",
+  "homeTown": 4,
+  "phoneNumber": "0777602179",
+  "email": "nilaxsanala2001@gmail.com",
+  "password": "nilax@123",
+  "verificationCode": "string",
+  "fileName": "string",
+  "contentType": "string",
+  "data": "string"
+}*/

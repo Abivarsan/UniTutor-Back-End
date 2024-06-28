@@ -108,6 +108,8 @@ namespace UniTutor.Controllers
                 return Unauthorized(new { authenticated = false });
             }
         }
+       
+        
         [HttpDelete("delete-student/{id}")]
         public IActionResult DeleteStudent(int id)
         {
@@ -129,6 +131,71 @@ namespace UniTutor.Controllers
             }
             return NotFound(new { message = "Tutor not found." });
         }
+
+        [HttpGet("AllStudents")]
+        public async Task<ActionResult<IEnumerable<Student>>> GetStudents()
+        {
+            var students = _admin.GetAllStudent();
+            if (students != null)
+            {
+                return Ok(students);
+            }
+            else
+            {
+                return BadRequest("There is no student");
+            }
+        }
+        [HttpGet("AllTutors")]
+        public async Task<ActionResult<IEnumerable<Tutor>>> GetTutors()
+        {
+            var tutors = _admin.GetAllStudent();
+            if (tutors != null)
+            {
+                return Ok(tutors);
+            }
+            else
+            {
+                return BadRequest("There is no student");
+            }
+        }
+        [HttpPut("rejecttutor/{id}")]
+        public IActionResult RejectTutor(int id)
+        {
+            var tutor = _tutor.GetById(id);
+           
+            if (tutor == null)
+            {
+                return BadRequest("Tutor object is null");
+            }
+           var result = _admin.rejectTutors(tutor);
+            if (result)
+            {
+                return Ok("Tutor rejected successfully");
+            }
+            else
+            {
+                return StatusCode(500, "An error occurred while rejecting the tutor");
+            }
+        }
+        [HttpPut("accepttutor/{id}")]
+        public IActionResult AcceptTutor(int id)
+        {
+            var tutor = _tutor.GetById(id);
+            if (tutor == null)
+            {
+                return BadRequest("Tutor object is null");
+            }
+            var result = _admin.acceptTutors(tutor);
+            if (result)
+            {
+                return Ok("Tutor accepted successfully");
+            }
+            else
+            {
+                return StatusCode(500, "An error occurred while accepting the tutor");
+            }
+        }
+
 
     }
 }

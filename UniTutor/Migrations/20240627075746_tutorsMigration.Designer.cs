@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UniTutor.DataBase;
 
@@ -10,9 +11,11 @@ using UniTutor.DataBase;
 namespace UniTutor.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20240627075746_tutorsMigration")]
+    partial class tutorsMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -97,10 +100,19 @@ namespace UniTutor.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ContentType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Data")
+                        .HasColumnType("varbinary(max)");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("FileName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -117,13 +129,6 @@ namespace UniTutor.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ProfileImageUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("School")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -151,8 +156,13 @@ namespace UniTutor.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CVUrl")
-                        .IsRequired()
+                    b.Property<string>("CVContentType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("CVData")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("CVFileName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
@@ -190,8 +200,13 @@ namespace UniTutor.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UniIdUrl")
-                        .IsRequired()
+                    b.Property<string>("UniIDContentType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("UniIDData")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("UniIDFileName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("VerificationCode")

@@ -1,36 +1,36 @@
-﻿using Braintree;
-using UniTutor.Interface;
+﻿//using Braintree;
+//using UniTutor.Interface;
 
-namespace UniTutor.payment
-{
-    public class BraintreeService : IBraintreeService
-    {
-        private readonly IConfiguration _config;
+//namespace UniTutor.payment
+//{
+//    public class BraintreeService : IBraintreeService
+//    {
+//        private readonly IConfiguration _config;
 
-        public BraintreeService(IConfiguration config)
-        {
-            _config = config;
-        }
+//        public BraintreeService(IConfiguration config)
+//        {
+//            _config = config;
+//        }
 
 
-        public IBraintreeGateway CreateGateway()
-        {
-            var newGateway = new BraintreeGateway()
-            {
-                Environment = Braintree.Environment.SANDBOX,
-                MerchantId = _config.GetValue<string>("BraintreeGateway:MerchantId"),
-                PublicKey = _config.GetValue<string>("BraintreeGateway:PublicKey"),
-                PrivateKey = _config.GetValue<string>("BraintreeGateway:PrivateKey")
-            };
+//        public IBraintreeGateway CreateGateway()
+//        {
+//            var newGateway = new BraintreeGateway()
+//            {
+//                Environment = Braintree.Environment.SANDBOX,
+//                MerchantId = _config.GetValue<string>("BraintreeGateway:MerchantId"),
+//                PublicKey = _config.GetValue<string>("BraintreeGateway:PublicKey"),
+//                PrivateKey = _config.GetValue<string>("BraintreeGateway:PrivateKey")
+//            };
 
-            return newGateway;
-        }
+//            return newGateway;
+//        }
 
-        public IBraintreeGateway GetGateway()
-        {
-            return CreateGateway();
+//        public IBraintreeGateway GetGateway()
+//        {
+//            return CreateGateway();
 
-        }
-    }
-}
+//        }
+//    }
+//}
 

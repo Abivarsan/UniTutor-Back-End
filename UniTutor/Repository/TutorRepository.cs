@@ -19,34 +19,23 @@ namespace UniTutor.Repository
             _DBcontext = DBcontext;
             _cloudinary = cloudinary;
         }
-
-      /*  public bool SignUp(Tutor tutor)
+        public bool SignUp(Tutor tutor)
         {
-            if (tutor.CvFile != null)
+            try
             {
-                using (var ms = new MemoryStream())
-                {
-                    tutor.CvFile.CopyTo(ms);
-                    tutor.CVFileName = tutor.CvFile.FileName;
-                    tutor.CVContentType = tutor.CvFile.ContentType;
-                    tutor.CVData = ms.ToArray();
-                }
+                PasswordHash ph = new PasswordHash();
+                tutor.password = ph.HashPassword(tutor.password);
+                _DBcontext.Tutors.Add(tutor);
+                _DBcontext.SaveChanges();
+                return true;
             }
-
-            if (tutor.UniIdFile != null)
+            catch (Exception ex)
             {
-                using (var ms = new MemoryStream())
-                {
-                    tutor.UniIdFile.CopyTo(ms);
-                    tutor.UniIDFileName = tutor.UniIdFile.FileName;
-                    tutor.UniIDContentType = tutor.UniIdFile.ContentType;
-                    tutor.UniIDData = ms.ToArray();
-                }
+                Console.WriteLine(ex.ToString());
+                return false;
             }
+        }
 
-            _DBcontext.Tutors.Add(tutor);
-            return _DBcontext.SaveChanges() > 0;
-        }*/
         
         public bool login(string email, string password)
         {
@@ -62,8 +51,9 @@ namespace UniTutor.Repository
             bool isValidPassword = ph.VerifyPassword(password, tutor.password);
             Console.WriteLine($"Password Validation : {isValidPassword}");
 
-            if (isValidPassword)
+            if (isValidPassword   && tutor.accept == 1)
             {
+              
                 return true;
             }
             else
@@ -167,63 +157,7 @@ namespace UniTutor.Repository
             var requests = _DBcontext.Request.Where(r => r.TutorId == id && r.status==1).ToList();
             return requests;
         }
-        public async Task<int> AddTutorWithFilesAsync(TutorViewModel model)
-        {
-            if ((model.CvFile == null || model.CvFile.Length == 0) || (model.UniIdFile == null || model.UniIdFile.Length == 0))
-                throw new ArgumentException("No file uploaded.");
-
-            using (var imageStream = new MemoryStream())
-            using (var pdfStream = new MemoryStream())
-            {
-                await model.CvFile.CopyToAsync(imageStream);
-                await model.UniIdFile.CopyToAsync(pdfStream);
-
-                var tutor = new Tutor
-                {
-                    FirstName = model.FirstName,
-                    LastName = model.LastName,
-                    Email = model.Email,
-                    password = model.password,
-                    Address = model.Address,
-                    PhoneNumber = model.PhoneNumber,
-                    Ocupation = model.Ocupation,
-                    ModeOfTeaching = model.ModeOfTeaching,
-                    Medium = model.Medium,
-                    subject = model.subject,
-                    Qualification = model.Qualification,
-                    HomeTown = model.HomeTown,
-                    CVFileName = model.CvFile.FileName,
-                    CVContentType = model.CvFile.ContentType,
-                    CVData = imageStream.ToArray(),
-                    UniIDFileName = model.UniIdFile.FileName,
-                    UniIDContentType = model.UniIdFile.ContentType,
-                    UniIDData = pdfStream.ToArray()
-                };
-
-                _DBcontext.Tutors.Add(tutor);
-                await _DBcontext.SaveChangesAsync();
-                return tutor.Id;
-            }
-        }
-
-        public async Task<Tutor> GetUniIDAsync(int id)
-        {
-            var tutor = await _DBcontext.Tutors.FindAsync(id);
-            if (tutor == null)
-                throw new ArgumentException("Tutor not found.");
-
-            return tutor;
-        }
-
-        public async Task<Tutor> GetCvFileAsync(int id)
-        {
-            var tutor = await _DBcontext.Tutors.FindAsync(id);
-            if (tutor == null)
-                throw new ArgumentException("Tutor not found.");
-
-            return tutor;
-        }
-
+        
         public async Task<Tutor> GetTutorAsync(int id)
         {
             return await _DBcontext.Tutors.FindAsync(id);

@@ -1,55 +1,73 @@
-﻿//using UniTutor.Interface;
-//using UniTutor.Model;
+﻿using UniTutor.Interface;
+using UniTutor.Model;
 
-//namespace UniTutor.Repository
-//{
-//    public class PasswordService : IPasswordService
-//    {
-//        private readonly IStudent _student;
-//        private readonly ITutor _tutor;
-//        private readonly IEmailService _emailService;
+namespace UniTutor.Repository
+{
+    public class PasswordService : IPasswordService
+    {
+        private readonly IStudent _student;
+        private readonly ITutor _tutor;
+        private readonly IEmailService _emailService;
 
-//        public PasswordService(IStudent student, ITutor tutor, IEmailService emailService)
-//        {
-//            _student = student;
-//            _tutor = tutor;
-//            _emailService = emailService;
-//        }
+        public PasswordService(IStudent student, ITutor tutor, IEmailService emailService)
+        {
+            _student = student;
+            _tutor = tutor;
+            _emailService = emailService;
+        }
 
-//        public async Task SendVerificationCodeAsync(string email)
-//        {
-//            var user = _student.GetByMail(email) ?? _tutor.GetTutorByEmail(email);
-//            if (user == null)
-//            {
-//                throw new Exception("Email not found");
-//            }
+        public async Task SendVerificationCodeAsync(string email)
+        {
+            var student = _student.GetByMail(email);
+            var tutor = _tutor.GetTutorByEmail(email);
 
-//            // Generate verification code
-//            var verificationCode = Guid.NewGuid().ToString("N").Substring(0, 6);
+            if (student != null)
+            {
+                // Generate verification code
+                var verificationCode = Guid.NewGuid().ToString("N").Substring(0, 6);
+                student.VerificationCode = verificationCode;
+                await _student.Update(student);
+                await _emailService.SendVerificationCodeAsync(student.Email, verificationCode);
+            }
+            else if (tutor != null)
+            {
+                // Generate verification code
+                var verificationCode = Guid.NewGuid().ToString("N").Substring(0, 6);
+                tutor.VerificationCode = verificationCode;
+                await _tutor.UpdateTutorAsync(tutor);
+                await _emailService.SendVerificationCodeAsync(tutor.Email, verificationCode);
+            }
+            else
+            {
+                throw new Exception("Email not found");
+            }
+        }
 
-//            // Save verification code to the database
-//            user.VerificationCode = verificationCode;
-//            await (user is Student ? _student.Update((Student)user) : _tutor.Update((Tutor)user));
+        public async Task<bool> ResetPasswordAsync(string email, string verificationCode, string newPassword)
+        {
+            var student = _student.GetByMail(email);
+            var tutor = _tutor.GetTutorByEmail(email);
 
-//            // Send verification code via email
-//            await _emailService.SendVerificationCodeAsync(user.Email, verificationCode);
-//        }
+            if (student != null && student.VerificationCode == verificationCode)
+            {
+                // Update the password
+                PasswordHash ph = new PasswordHash();
+                student.password = ph.HashPassword(newPassword);
+                student.VerificationCode = null; // Clear the verification code after successful reset
+                await _student.Update(student);
+                return true;
+            }
+            else if (tutor != null && tutor.VerificationCode == verificationCode)
+            {
+                // Update the password
+                PasswordHash ph = new PasswordHash();
+                tutor.password = ph.HashPassword(newPassword);
+                tutor.VerificationCode = null; // Clear the verification code after successful reset
+                await _tutor.UpdateTutorAsync(tutor);
+                return true;
+            }
 
-//        public async Task<bool> ResetPasswordAsync(string email, string verificationCode, string newPassword)
-//        {
-//            var user = _student.GetByMail(email) ?? _tutor.GetTutorByEmail(email);
-//            if (user == null || user.VerificationCode != verificationCode)
-//            {
-//                return false;
-//            }
-
-//            // Update the password
-//            PasswordHash ph = new PasswordHash();
-//            user.Password = ph.HashPassword(newPassword);
-//            user.VerificationCode = null; // Clear the verification code after successful reset
-
-//            await (user is Student ? _student.Update((Student)user) : _tutor.Update((Tutor)user));
-//            return true;
-//        }
-//    }
-//}
+            return false; // If no user matched or verification code didn't match
+        }
+    }
+}

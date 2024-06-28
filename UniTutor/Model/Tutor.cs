@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime;
 
 namespace UniTutor.Model
 {
@@ -21,19 +22,12 @@ namespace UniTutor.Model
         public string Medium { get; set;}
         public string subject { get; set; }
         public string Qualification { get; set; }
-        [Required]
         public int HomeTown { get; set; }
-        // Image properties
-        public string CVFileName { get; set; }
-        public string CVContentType { get; set; }
-        public byte[] CVData { get; set; }
-
-        public string UniIDFileName { get; set; }
-        public string UniIDContentType { get; set; }
-        public byte[] UniIDData { get; set; }
-
-       
+        public string UniIdUrl { get; set; }   
+        public string CVUrl { get; set; }
+        
         public int accept { get; set; }=0;
+        public string? VerificationCode { get; set; }
 
 
     }
