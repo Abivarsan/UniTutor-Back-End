@@ -1,8 +1,7 @@
-﻿using CloudinaryDotNet;
-using CloudinaryDotNet.Actions;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UniTutor.DataBase;
+using UniTutor.DTO;
 using UniTutor.Interface;
 using UniTutor.Model;
 
@@ -12,18 +11,17 @@ namespace UniTutor.Repository
     {
         private ApplicationDBContext _DBcontext;
         private readonly IConfiguration _config;
-        private readonly Cloudinary _cloudinary;
+       
         public StudentRepository(ApplicationDBContext DBcontext , IConfiguration config)
         {
             _DBcontext = DBcontext;
             
         }
+
         public bool SignUp(Student student)
         {
             try
             {
-              PasswordHash ph = new PasswordHash();
-              student.password = ph.HashPassword(student.password);
                 _DBcontext.Students.Add(student);
                 _DBcontext.SaveChanges();
                 return true;
@@ -38,7 +36,7 @@ namespace UniTutor.Repository
         {
             try
             {
-                var student = _DBcontext.Students.FirstOrDefault(a => a.Email == email);
+                var student = _DBcontext.Students.FirstOrDefault(a => a.email == email);
 
                 if (student == null)
                 {
@@ -66,7 +64,7 @@ namespace UniTutor.Repository
 
         public Student GetByMail(string Email)
         {
-            return _DBcontext.Students.FirstOrDefault(s => s.Email == Email);
+            return _DBcontext.Students.FirstOrDefault(s => s.email == Email);
         }
         public Student GetById(int id)
         {
@@ -82,14 +80,7 @@ namespace UniTutor.Repository
                 return true;
             }
             return false;
-        }
-        
-
-        
-
-       
-
-        
+        } 
         public bool SignOut()
         {
             try
@@ -107,7 +98,7 @@ namespace UniTutor.Repository
         {
             try
             {
-                _DBcontext.Request.Add(request);
+                _DBcontext.Requests.Add(request);
                 _DBcontext.SaveChanges();
                 return true;
             }
@@ -120,7 +111,7 @@ namespace UniTutor.Repository
         {
             try
             {
-                _DBcontext.Request.Remove(request);
+                _DBcontext.Requests.Remove(request);
                 _DBcontext.SaveChanges();
                 return true;
             }
@@ -134,11 +125,11 @@ namespace UniTutor.Repository
             var tutors = _DBcontext.Tutors.ToList();
             return tutors;
         }
-        public ICollection<Tutor> GetTutorByLocation(int location)
-        {
-            var tutors = _DBcontext.Tutors.Where(r => r.HomeTown == location).ToList();
-            return tutors;
-        }
+        //public ICollection<Tutor> GetTutorByLocation(int location)
+        //{
+        //    var tutors = _DBcontext.Tutors.Where(r => r.HomeTown == location).ToList();
+        //    return tutors;
+        //}
 
 
         public async Task<bool> Update(Student student)
@@ -173,7 +164,38 @@ namespace UniTutor.Repository
                 await _DBcontext.SaveChangesAsync();
             }
         }
+        public async Task<Student> UpdateStudentProfile(int id, UpdateStudent updatedStudent)
+        {
+            var student = await _DBcontext.Students.FindAsync(id);
+            if (student == null)
+            {
+                return null;
+            }
 
+            if (updatedStudent.firstName != null)
+            {
+                student.firstName = updatedStudent.firstName;
+            }
+            if (updatedStudent.lastName != null)
+            {
+                student.lastName = updatedStudent.lastName;
+            }
+            if (updatedStudent.grade != null)
+            {
+                student.grade = updatedStudent.grade;
+            }
+
+
+            if (updatedStudent.address != null)
+            {
+                student.address = updatedStudent.address;
+            }
+            
+            _DBcontext.Students.Update(student);
+            await _DBcontext.SaveChangesAsync();
+
+            return student;
+        }
 
     }
 }

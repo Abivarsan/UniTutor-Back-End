@@ -1,4 +1,4 @@
-﻿using CloudinaryDotNet;
+﻿
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -14,12 +14,12 @@ namespace UniTutor.Repository
     {
         private ApplicationDBContext _DBcontext;
         private readonly IConfiguration _config;
-        private readonly Cloudinary _cloudinary;
-        public AdminRepository(ApplicationDBContext DBcontext, IConfiguration config, Cloudinary cloudinary)
+        
+        public AdminRepository(ApplicationDBContext DBcontext, IConfiguration config)
         {
             _DBcontext = DBcontext;
             _config = config;
-            _cloudinary = cloudinary;
+           
         }
 
         public bool CreateAdmin(Admin admin)
@@ -133,7 +133,7 @@ namespace UniTutor.Repository
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                Console.WriteLine(ex.ToString()); ;
                 return false;
             }
         }

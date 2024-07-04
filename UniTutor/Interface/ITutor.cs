@@ -1,4 +1,5 @@
-﻿using UniTutor.Model;
+﻿using UniTutor.DTO;
+using UniTutor.Model;
 
 namespace UniTutor.Interface
 {
@@ -22,7 +23,8 @@ namespace UniTutor.Interface
         public bool isUser(string email);
         Task<Tutor> GetTutorAsync(int id);
         Task UpdateTutorAsync(Tutor tutor);
-       
+        public Task<Tutor> UpdateTutorProfile(int id, UpdateTutor updatedtutor);
+
 
 
 

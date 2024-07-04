@@ -22,6 +22,9 @@ namespace UniTutor.Controllers
             try
             {
                 await _passwordService.SendVerificationCodeAsync(fprequest.Email);
+                
+
+               
                 return Ok(new { message = "Verification code sent to email" });
             }
             catch (Exception ex)
@@ -30,16 +33,42 @@ namespace UniTutor.Controllers
             }
         }
 
-        [HttpPost("reset-password")]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest rprequest)
+        //[HttpPost("reset-password")]
+        //public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest rprequest)
+        //{
+        //    var result = await _passwordService.ResetPasswordAsync(rprequest.Email, rprequest.VerificationCode, rprequest.NewPassword);
+        //    if (!result)
+        //    {
+        //        return BadRequest(new { message = "Invalid verification code" });
+        //    }
+
+        //    return Ok(new { message = "Password reset successful" });
+        //}
+        [HttpPost("verify-otp")]
+        public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpRequest request)
         {
-            var result = await _passwordService.ResetPasswordAsync(rprequest.Email, rprequest.VerificationCode, rprequest.NewPassword);
-            if (!result)
+           
+            var result = await _passwordService.VerifyOtpAsync( request.VerificationCode);
+            if (result)
             {
-                return BadRequest(new { message = "Invalid verification code" });
+                return Ok(new { message = "OTP verified successfully" });
             }
 
-            return Ok(new { message = "Password reset successful" });
+            return BadRequest(new { message = "Invalid OTP or user not found" });
         }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+        {
+            
+            var result = await _passwordService.ResetPasswordAsync(request.NewPassword);
+            if (result)
+            {
+                return Ok(new { message = "Password reset successful" });
+            }
+
+            return BadRequest(new { message = "User not found or password reset failed" });
+        }
+
     }
 }

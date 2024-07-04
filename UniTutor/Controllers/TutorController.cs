@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity.Data;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using UniTutor.DTO;
 using UniTutor.Interface;
 using UniTutor.Model;
 using UniTutor.Repository;
@@ -18,13 +20,51 @@ namespace UniTutor.Controllers
     {
         ITutor _tutor;
         private IConfiguration _config;
-        public TutorController(ITutor tutor, IConfiguration config)
+        private readonly IMapper _mapper;
+        public TutorController(ITutor tutor, IConfiguration config,IMapper mapper)
         {
             _tutor = tutor;
             _config = config;
+            _mapper = mapper;
         }
 
-       
+        [HttpPost("create")]
+        public IActionResult CreateAccount([FromBody] TutorRegistration tutorDto)
+        {
+            if (ModelState.IsValid)
+            {
+                var tutor = _mapper.Map<Tutor>(tutorDto);
+                PasswordHash ph = new PasswordHash();
+                tutor.password = ph.HashPassword(tutorDto.password); // Hash the password
+
+                var result = _tutor.SignUp(tutor);
+                if (result)
+                {
+                    Console.WriteLine("registration success");
+                    return CreatedAtAction(nameof(GetAccountById), new { id = tutor.Id }, tutor);
+                }
+                else
+                {
+                    Console.WriteLine("registration failed");
+                    return BadRequest(result);
+                }
+            }
+            else
+            {
+                return BadRequest("ModelError");
+            }
+        }
+
+        [HttpGet("details/{id}")]
+        public IActionResult GetAccountById(int id)
+        {
+            var tutor = _tutor.GetById(id);
+            if (tutor == null)
+            {
+                return NotFound();
+            }
+            return Ok(tutor);
+        }
 
 
         [HttpPost("login")]
@@ -50,9 +90,10 @@ namespace UniTutor.Controllers
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-            new Claim(ClaimTypes.Name, loggedInTutor.Email),  // Email claim
+            new Claim(ClaimTypes.Name, loggedInTutor.universityMail),  // Email claim
             new Claim(ClaimTypes.NameIdentifier, loggedInTutor.Id.ToString()),  // ID claim
-            new Claim(ClaimTypes.GivenName, loggedInTutor.FirstName)  // name claim
+            new Claim(ClaimTypes.GivenName, loggedInTutor.firstName),  // name claim
+            new Claim(ClaimTypes.Role, "Tutor")
                 }),
                 Expires = DateTime.UtcNow.AddDays(30),
                 SigningCredentials = credentials
@@ -64,6 +105,19 @@ namespace UniTutor.Controllers
             return Ok(new { token = tokenHandler.WriteToken(token), Id = loggedInTutor.Id });
         }
 
+        
+
+
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetTutor(int id)
+        {
+            var tutor = await _tutor.GetTutorAsync(id);
+            if (tutor == null)
+                return NotFound();
+
+            return Ok(tutor);
+        }
         [HttpPatch("acceptRequest")]
         public IActionResult acceptrequest(Request request)
         {
@@ -121,46 +175,19 @@ namespace UniTutor.Controllers
                 return BadRequest("There is no accept request");
             }
         }
-        [HttpPost]
-        [Route("create")]
-        public IActionResult CreateAccount([FromBody] Tutor tutor)
+       
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> UpdateTutor(int id, [FromBody] UpdateTutor updatedtutor)
         {
-
-            if (ModelState.IsValid)
-            {
-
-                var result = _tutor.SignUp(tutor);
-                if (result)
-                {
-                    Console.WriteLine("registration success");
-                    return Ok(result);
-
-                }
-                else
-                {
-                    Console.WriteLine("registration failed");
-                    return BadRequest(result);
-                }
-            }
-            else
-            {
-                return BadRequest("ModelError");
-            }
-
-        }
-
-
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetTutor(int id)
-        {
-            var tutor = await _tutor.GetTutorAsync(id);
+            var tutor = await _tutor.UpdateTutorProfile(id, updatedtutor);
             if (tutor == null)
+            {
                 return NotFound();
+            }
 
             return Ok(tutor);
         }
-        
+
 
 
     }

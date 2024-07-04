@@ -77,7 +77,9 @@ namespace UniTutor.Controllers
                     {
                 new Claim(ClaimTypes.Name, adminLogin.Email),  // Email claim
                 new Claim(ClaimTypes.NameIdentifier, loggedInAdmin.Id.ToString()),  // Admin ID claim
-                new Claim(ClaimTypes.GivenName, loggedInAdmin.Name)  // Admin name claim
+                new Claim(ClaimTypes.GivenName, loggedInAdmin.Name),  // Admin name claim
+                new Claim(ClaimTypes.Role, "Student")
+
                     }),
                     Expires = DateTime.UtcNow.AddDays(30),
                     SigningCredentials = credentials
@@ -148,7 +150,7 @@ namespace UniTutor.Controllers
         [HttpGet("AllTutors")]
         public async Task<ActionResult<IEnumerable<Tutor>>> GetTutors()
         {
-            var tutors = _admin.GetAllStudent();
+            var tutors = _admin.GetAllTutor();
             if (tutors != null)
             {
                 return Ok(tutors);

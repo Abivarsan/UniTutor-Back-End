@@ -2,6 +2,7 @@
 using CloudinaryDotNet.Actions;
 using Microsoft.EntityFrameworkCore;
 using UniTutor.DataBase;
+using UniTutor.DTO;
 using UniTutor.Interface;
 using UniTutor.Model;
 
@@ -11,20 +12,20 @@ namespace UniTutor.Repository
     {
         private ApplicationDBContext _DBcontext;
         private readonly IConfiguration _config;
-        private readonly Cloudinary _cloudinary;
+       
 
 
-        public TutorRepository(ApplicationDBContext DBcontext, Cloudinary cloudinary)
+        public TutorRepository(ApplicationDBContext DBcontext, IConfiguration config)
         {
             _DBcontext = DBcontext;
-            _cloudinary = cloudinary;
+            _config = config;
+
+
         }
         public bool SignUp(Tutor tutor)
         {
             try
             {
-                PasswordHash ph = new PasswordHash();
-                tutor.password = ph.HashPassword(tutor.password);
                 _DBcontext.Tutors.Add(tutor);
                 _DBcontext.SaveChanges();
                 return true;
@@ -39,7 +40,7 @@ namespace UniTutor.Repository
         
         public bool login(string email, string password)
         {
-            var tutor = _DBcontext.Tutors.FirstOrDefault(a => a.Email == email);
+            var tutor = _DBcontext.Tutors.FirstOrDefault(a => a.universityMail == email);
 
             if (tutor == null)
             {
@@ -51,7 +52,7 @@ namespace UniTutor.Repository
             bool isValidPassword = ph.VerifyPassword(password, tutor.password);
             Console.WriteLine($"Password Validation : {isValidPassword}");
 
-            if (isValidPassword   && tutor.accept == 1)
+            if (isValidPassword)
             {
               
                 return true;
@@ -64,7 +65,7 @@ namespace UniTutor.Repository
 
         public Tutor GetTutorByEmail(string email)
         {
-            return _DBcontext.Tutors.FirstOrDefault(x => x.Email == email);
+            return _DBcontext.Tutors.FirstOrDefault(x => x.universityMail == email);
         }
         public bool isUser(string email)
         {
@@ -122,7 +123,7 @@ namespace UniTutor.Repository
             try
             {
                 request.status = 1;
-                _DBcontext.Request.Update(request);
+                _DBcontext.Requests.Update(request);
                 _DBcontext.SaveChanges();
                 return true;
             }
@@ -137,7 +138,7 @@ namespace UniTutor.Repository
             try
             {
                 request.status = -1; 
-                _DBcontext.Request.Update(request);
+                _DBcontext.Requests.Update(request);
                 _DBcontext.SaveChanges();
                 return true;
             }
@@ -149,12 +150,12 @@ namespace UniTutor.Repository
         }
         public ICollection<Request> GetAllRequest(int id)
         {
-            var requests = _DBcontext.Request.Where(r => r.TutorId == id).ToList();
+            var requests = _DBcontext.Requests.Where(r => r.TutorId == id).ToList();
             return requests;
         }
         public ICollection<Request> GetAcceptedRequest(int id)
         {
-            var requests = _DBcontext.Request.Where(r => r.TutorId == id && r.status==1).ToList();
+            var requests = _DBcontext.Requests.Where(r => r.TutorId == id && r.status==1).ToList();
             return requests;
         }
         
@@ -167,6 +168,40 @@ namespace UniTutor.Repository
         {
             _DBcontext.Tutors.Update(tutor);
             await _DBcontext.SaveChangesAsync();
+        }
+        public async Task<Tutor> UpdateTutorProfile(int id, UpdateTutor updatedtutor)
+        {
+            var tutor = await _DBcontext.Tutors.FindAsync(id);
+            if (tutor == null)
+            {
+                return null;
+            }
+
+            if (updatedtutor.firstName != null)
+            {
+                tutor.firstName = updatedtutor.firstName;
+            }
+            if (updatedtutor.lastName != null)
+            {
+                tutor.lastName = updatedtutor.lastName;
+            }
+            if (updatedtutor.address != null)
+            {
+                tutor.address = updatedtutor.address;
+            }
+            //if (updatedtutor.Subject != null)
+            //{
+            //    tutor.subjects = updatedtutor.Subjects;
+            //}
+            if (updatedtutor.profileUrl != null)
+            {
+                tutor.ProfileUrl = updatedtutor.profileUrl;
+            }
+
+            _DBcontext.Tutors.Update(tutor);
+            await _DBcontext.SaveChangesAsync();
+
+            return tutor;
         }
 
 

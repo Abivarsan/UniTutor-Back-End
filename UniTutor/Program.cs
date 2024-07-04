@@ -7,8 +7,9 @@ using UniTutor.DataBase;
 using UniTutor.Interface;
 using UniTutor.Repository;
 using UniTutor.Services;
-using CloudinaryDotNet;
 using Microsoft.OpenApi.Models;
+using AutoMapper;
+using UniTutor.Mapping;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +22,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOrigin",
         policy =>
         {
-            policy.WithOrigins("http://localhost:3000")
+            policy.WithOrigins("*")
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         });
@@ -33,6 +34,8 @@ builder.Services.AddDbContext<ApplicationDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection") ??
         throw new InvalidOperationException("Connection String is not found"));
 });
+//Adding AutoMapper
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 // Configuring JWT Authentication
 var jwtIssuer = builder.Configuration.GetSection("Jwt:Issuer").Get<string>();
@@ -55,6 +58,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+
 // Add Email Configuration
 var emailConfig = builder.Configuration
     .GetSection("EmailConfiguration")
@@ -62,16 +66,11 @@ var emailConfig = builder.Configuration
 builder.Services.AddSingleton(emailConfig);
 builder.Services.AddTransient<IEmailService, EmailService>();
 
-// Registering Cloudinary
-builder.Services.AddSingleton(new Cloudinary(new Account(
-    builder.Configuration["Cloudinary:CloudName"],
-    builder.Configuration["Cloudinary:ApiKey"],
-    builder.Configuration["Cloudinary:ApiSecret"]   
-)));
 
 builder.Services.AddScoped<IAdmin, AdminRepository>();
 builder.Services.AddScoped<IStudent, StudentRepository>();
 builder.Services.AddScoped<ITutor, TutorRepository>();
+builder.Services.AddScoped<ISubject, SubjectRepository>();
 builder.Services.AddTransient<IPasswordService, PasswordService>();
 
 // Register Swagger generator

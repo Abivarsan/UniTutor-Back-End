@@ -14,37 +14,42 @@ using UniTutor.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.Data;
 using UniTutor.Services;
+using UniTutor.DTO;
+using UniTutor.Migrations;
+using AutoMapper;
 
 namespace UniTutor.Controllers
 {
+    
     [Route("api/[controller]")]
     [ApiController]
     public class StudentController : ControllerBase
     {
         IStudent _student;
         private readonly IConfiguration _config;
+        private readonly IMapper _mapper;   
         
 
-        public StudentController(IStudent student,IConfiguration config)
+        public StudentController(IStudent student,IConfiguration config,IMapper mapper)
         {
             _config = config;
             _student = student;
-            
+            _mapper = mapper;
         }
-           [HttpPost]
-           [Route("create")]
-           public IActionResult CreateAccount([FromBody]Student student)
-           {
-                      
+        [HttpPost("create")]
+        public IActionResult CreateAccount([FromBody] StudentRegistration studentDto)
+        {
             if (ModelState.IsValid)
             {
+                var student = _mapper.Map<Student>(studentDto);
+                PasswordHash ph = new PasswordHash();
+                student.password = ph.HashPassword(studentDto.password); // Hash the password
 
                 var result = _student.SignUp(student);
                 if (result)
                 {
                     Console.WriteLine("registration success");
-                    return Ok(result);    
-
+                    return CreatedAtAction(nameof(GetAccountById), new { id = student.Id }, student);
                 }
                 else
                 {
@@ -56,13 +61,24 @@ namespace UniTutor.Controllers
             {
                 return BadRequest("ModelError");
             }
-
         }
-        [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginRequest studentLogin)
+        [HttpGet("details/{id}")]
+        public IActionResult GetAccountById(int id)
         {
-            var email = studentLogin.Email;
-            var password = studentLogin.Password;
+            var student = _student.GetById(id);
+            if (student == null)
+            {
+                return NotFound();
+            }
+            return Ok(student);
+        }
+
+
+        [HttpPost("login")]
+        public IActionResult Login([FromBody] Loginrequest studentLogin)
+        {
+            var email = studentLogin.email;
+            var password = studentLogin.password;
 
             var result = _student.Login(email, password);
             if (result)
@@ -78,7 +94,8 @@ namespace UniTutor.Controllers
                     {
          new Claim(ClaimTypes.Name, email),  // Email claim
          new Claim(ClaimTypes.NameIdentifier, loggedInStudent.Id.ToString()),  // Student ID claim
-         new Claim(ClaimTypes.GivenName, loggedInStudent.FirstName)  // Student name claim
+         new Claim(ClaimTypes.GivenName, loggedInStudent.firstName),  // Student name claim
+         new Claim(ClaimTypes.Role, "Student")
                     }),
                     Expires = DateTime.UtcNow.AddDays(30),
                     SigningCredentials = credentials
@@ -94,35 +111,8 @@ namespace UniTutor.Controllers
                 return Unauthorized("Invalid email or password");
             }
         }
-        [HttpGet("details")]
-        [Authorize]
-        public IActionResult GetStudentDetails()
-        {
-            // Extract student ID from the token claims
-            var studentIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-            if (studentIdClaim == null)
-            {
-                return Unauthorized("Student ID not found in token");
-            }
-
-            var studentId = int.Parse(studentIdClaim.Value);
-
-            // Fetch student details from the database
-            var student = _student.GetById(studentId);
-            if (student == null)
-            {
-                return NotFound("Student not found");
-            }
-
-            // Return the student details
-            return Ok(student);
-        }
     
-    
-
-   
-
-    [HttpPost("requesttutor")]
+        [HttpPost("requesttutor")]
         public IActionResult requesttutor([FromBody] Request request)
         {
             var result = _student.CreateRequest(request);
@@ -148,6 +138,18 @@ namespace UniTutor.Controllers
                 return BadRequest();
             }
         }
+        [HttpPatch("updatestudent{id}")]
+        public async Task<IActionResult> UpdateStudentPartial(int id, [FromBody] UpdateStudent updatedStudent)
+        {
+            var student = await _student.UpdateStudentProfile(id, updatedStudent);
+            if (student == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(student);
+        }
+
 
     }
 }
